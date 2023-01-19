@@ -11,7 +11,8 @@ pytest-cov = "*"
 isort = "*"
 black = "*"
 mypy = "*"
+flake8 = "*"
 pre-commit = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.10.8"

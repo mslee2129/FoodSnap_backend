@@ -6,31 +6,36 @@ Imagine that you could show a dish to a machine learning algorithm and it would 
 
 ## Set up
 
-### Virtual Environment
+In this project we use Python version `3.10.8` and Pipenv for managing virtual environments (see full documentation [here](https://pipenv-fork.readthedocs.io/en/latest/basics.html)).
 
-In this project we use Python version `3.10` and Pipenv for managing virtual environments (see full documentation [here](https://pipenv-fork.readthedocs.io/en/latest/basics.html)).
+The local environment (for development) can be set up by running [`setup.sh`](setup.sh):
+```
+bash setup.sh
+```
 
-1 - Install `pipenv` (for Mac users you can also use `brew`)
+This assumes that `pipenv` is already installed, if not then uncomment out the section for installing this with `pip` (for Mac users you can also use `brew`) or simply run:
 ```
 pip install pipenv
 ```
 
-2 - Create virtual environment and install the dependencies listed in `Pipfile` (including `dev` dependencies)
+### Virtual Environment
+
+Creat virtual environment and install dependencies listed in [`Pipfile`](Pipfile) (including `dev` dependencies):
 ```
 pipenv install --dev
 ```
 
-3 - Activate existing environment
+Activate environment:
 ```
 pipenv shell
 ```
 
-4 - Exit the environment
+Exit environment:
 ```
 deactivate
 ```
 
-5 - Remove current environment
+Delete environment:
 ```
 pipenv --rm
 ```

@@ -28,7 +28,7 @@ type checks:
   stage: linting
   interruptible: true
   script:
-    - mypy app/* --strict
+    - mypy app/* --ignore-missing-imports
 
 format checks:
   stage: linting

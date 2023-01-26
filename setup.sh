@@ -5,7 +5,7 @@ GREEN='\033[1;32m'
 PURPLE='\033[1;35m'
 NC='\033[0m'
 
-echo -e "${GREEN}-----Calorie Tracker Set Up-----${NC}\n"
+echo -e "${GREEN}-----FoodSnap Backend Set Up-----${NC}\n"
 
 # uncomment if you need to install pipenv
 # pip install pipenv

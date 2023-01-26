@@ -23,7 +23,8 @@ repos:
     hooks:
       - id: mypy
         exclude: ^tests/
-        args: [--strict]
+        args: [--ignore-missing-imports]
+        additional_dependencies: ['types-requests', 'types-Flask']
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:

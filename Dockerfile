@@ -3,15 +3,13 @@ FROM python:3.10
 # Setting working directory
 WORKDIR /code
 
-# # Install python packages
-# COPY ./requirements.txt /code/requirements.txt
-# RUN pip install pipenv
+# Install python packages
+COPY Pipfile Pipfile.lock ./
+RUN python -m pip install --upgrade pip
+RUN pip install pipenv && pipenv install --dev --system --deploy
 
+# Copy app code
+COPY ./app /code/app
 
-# RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-
-# # Copy app code
-# COPY ./*.py /code/
-# COPY ./app /code/app
-
-# CMD ["gunicorn", "--config", "gunicorn_config.py", "main:app"]
+# Run flask application
+CMD ["flask", "--app", "app.api.endpoint", "run", "--port", $PORT]

@@ -8,11 +8,8 @@ from flask_cors import CORS
 from app.calories import FoodDetails, get_food_details
 from app.vision import get_food_classification
 
-PORT = 5000
-
 app = Flask(__name__)
 cors = CORS(app)
-app.config["DEBUG"] = True
 
 
 def get_calories(image: bytes) -> Optional[FoodDetails]:
@@ -64,4 +61,4 @@ def get_calorie_estimation() -> Any:
 
 
 if __name__ == "__main__":
-    app.run(port=PORT, debug=True)
+    app.run(host="0.0.0.0")

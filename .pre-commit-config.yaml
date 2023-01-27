@@ -29,11 +29,3 @@ repos:
     rev: 6.0.0
     hooks:
       - id: flake8
-  - repo: local
-    hooks:
-      - id: pipenv-generate-requirements
-        name: Generate requirements.txt
-        description: This hook generates a requirements.txt files from Pipfile.lock
-        entry: ./generate-reqs.sh
-        language: script
-        files: ^Pipfile(\.lock)?$

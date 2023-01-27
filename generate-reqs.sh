@@ -1,3 +1,3 @@
 #!/bin/bash
 
-pipenv lock -r > requirements.txt
+pipenv requirements > requirements.txt

@@ -9,7 +9,6 @@ typing = "*"
 flask = "*"
 flask-cors = "*"
 google-cloud-vision = "*"
-pandas = "*"
 
 [dev-packages]
 pytest = "*"

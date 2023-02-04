@@ -3,6 +3,7 @@ image: python:3.10.8
 stages:
   - linting
   - testing
+  - deploy
 
 before_script:
   - apt-get update
@@ -50,3 +51,14 @@ unit tests:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
+
+deploy:
+  stage: deploy
+  image: google/cloud-sdk
+  services:
+    - docker:dind
+  script:
+    - echo $GCP_CLOUD_BUILD_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - gcloud builds submit . --config=cloudbuild.yaml

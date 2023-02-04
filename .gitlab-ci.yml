@@ -58,6 +58,7 @@ deploy:
   services:
     - docker:dind
   script:
+    - echo python --version
     - echo $GCP_CLOUD_BUILD_SERVICE_KEY > gcloud-service-key.json
     - gcloud auth activate-service-account --key-file gcloud-service-key.json
     - gcloud config set project $GCP_PROJECT_ID

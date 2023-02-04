@@ -9,3 +9,5 @@ steps:
     # TODO: add '--no-allow-unauthenticated' back in
   - name: "gcr.io/cloud-builders/gcloud"
     args: ['run', 'deploy', 'foodsnap-backend', '--image', 'gcr.io/$PROJECT_ID/foodsnap-backend', '--region', 'europe-west2', '--allow-unauthenticated']
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -57,6 +57,7 @@ deploy:
   image: google/cloud-sdk
   services:
     - docker:dind
+  before_script: []
   script:
     - echo python --version
     - echo $GCP_CLOUD_BUILD_SERVICE_KEY > gcloud-service-key.json

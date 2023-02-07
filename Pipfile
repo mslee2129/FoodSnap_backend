@@ -20,6 +20,8 @@ mypy = "*"
 flake8 = "*"
 pre-commit = "*"
 types-requests = "*"
+requests-mock = "*"
+nose = "*"
 
 [requires]
 python_version = "3.10.8"

@@ -42,7 +42,8 @@ def get_food_details(search: str) -> FoodDetails:
         FoodDetails: Food label and nutrition details.
     """
     # make Edamam API call
-    data = make_request(search)
+    response = make_request(search)
+    data = check_response(response)
 
     # parse relevant data from API
     details = parse_json(data)
@@ -57,22 +58,41 @@ def make_request(search: str) -> Any:
     Args:
         search (str): Food item for request.
     Returns:
-        Any: API response in JSON form.
+        Any: API response in JSON form if response is successful.
     """
+
     # parameters required for API call
     params = {"app_id": APP_ID, "app_key": APP_KEY, "ingr": search}
 
     # make request
-    r = requests.get(url=EDAMAM_URL, params=params)
+    response = requests.get(url=EDAMAM_URL, params=params)
 
-    # extract response in JSON format
-    data = r.json()
-
-    # ensure response as expected
-    if not data["parsed"]:
+    if not response.ok:
         raise ValueError(f"Edamam API could not return information for term: {search}")
 
-    return data
+    return response
+
+
+def check_response(response: Any) -> Any:
+    """
+    Takes an Edamam API response and checks response integrity.
+    Args:
+        response (Any): JSON response from API call.
+    Returns:
+        data (Any): SUbset of integrity-checked data from API
+            call as JSON.
+    """
+    # extract response in JSON format
+    data = response.json()
+
+    # check for integrity of data
+    if not data["parsed"][0]["food"]["label"]:
+        raise KeyError("API response data does not contain expected 'label' key")
+
+    if not data["parsed"][0]["food"]["nutrients"]:
+        raise KeyError("API response data does not contain expected 'nutrients' key")
+
+    return data["parsed"][0]["food"]
 
 
 def parse_json(data: Dict[Any, Any]) -> FoodDetails:
@@ -85,10 +105,10 @@ def parse_json(data: Dict[Any, Any]) -> FoodDetails:
         FoodDetails: Food label and nutrition details.
     """
     # parse food label
-    label = data["parsed"][0]["food"]["label"]
+    label = data["label"]
 
     # parse nutrition data - dictionary containing multiple values (incl. KCal per 100g)
-    nutrition = data["parsed"][0]["food"]["nutrients"]
+    nutrition = data["nutrients"]
 
     # construct food details based on relevant information
     details = FoodDetails(label, nutrition)

@@ -9,6 +9,7 @@ typing = "*"
 flask = "*"
 flask-cors = "*"
 google-cloud-vision = "*"
+gunicorn = "*"
 
 [dev-packages]
 pytest = "*"

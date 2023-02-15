@@ -2,8 +2,8 @@ from unittest.mock import MagicMock
 
 import requests_mock
 
-from app.calories import FoodDetails, check_response, make_request, parse_json
-from app.constants import EDAMAM_URL
+from app.estimator.calories import FoodDetails, check_response, make_request, parse_json
+from app.estimator.constants import EDAMAM_URL
 
 
 def test_food_details_object_is_correct():

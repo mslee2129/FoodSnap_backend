@@ -24,6 +24,8 @@ pre-commit = "*"
 types-requests = "*"
 requests-mock = "*"
 nose = "*"
+"pytest.mock" = "*"
+pytest-mock = "*"
 
 [requires]
 python_version = "3.10.8"

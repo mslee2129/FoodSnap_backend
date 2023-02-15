@@ -9,7 +9,7 @@ before_script:
   - apt-get update
   - pip install --upgrade pip
   - pip install pipenv
-  - pipenv install --dev
+  - pipenv install --categories=dev-packages
   - export VENV_HOME_DIR=$(pipenv --venv)
   - source $VENV_HOME_DIR/bin/activate
 
@@ -41,6 +41,7 @@ unit tests:
   stage: testing
   interruptible: true
   script:
+    - pipenv install
     - pytest --junitxml=report.xml --cov=app/ --cov-report term-missing tests/
     - coverage xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'

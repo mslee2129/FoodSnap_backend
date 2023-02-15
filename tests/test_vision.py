@@ -1,12 +1,14 @@
-from unittest.mock import MagicMock, patch
+from pathlib import Path
+from unittest.mock import MagicMock, mock_open, patch
 
-from app.vision import get_food_classification
+from app.estimator.vision import get_food_classification
 
 VALID_ITEMS = ["pizza", "omelette", "burger"]
 
 
 @patch("google.cloud.vision.ImageAnnotatorClient")
-def test_get_food_classification(mock_vision):
+@patch("builtins.open", new_callable=mock_open, read_data=b"data")
+def test_get_food_classification(mock_file, mock_vision):
     """Tests response from Google vision request with a mock object"""
     mock_response = MagicMock()
     mock_labels = [
@@ -18,7 +20,7 @@ def test_get_food_classification(mock_vision):
     mock_vision().label_detection.return_value = mock_response
 
     # call the function with mock input
-    input_data = b"example_input"
+    input_data = Path("path/to/image")
     result = get_food_classification(input_data)
 
     # assert the result is as expected
@@ -26,7 +28,8 @@ def test_get_food_classification(mock_vision):
 
 
 @patch("google.cloud.vision.ImageAnnotatorClient")
-def test_get_food_classification_none(mock_vision):
+@patch("builtins.open", new_callable=mock_open, read_data=b"data")
+def test_get_food_classification_none(mock_file, mock_vision):
     """Tests response from Google vision request with a mock object"""
     mock_response = MagicMock()
     mock_labels = [
@@ -38,7 +41,7 @@ def test_get_food_classification_none(mock_vision):
     mock_vision().label_detection.return_value = mock_response
 
     # call the function with mock input
-    input_data = b"example_input"
+    input_data = Path("path/to/image")
     result = get_food_classification(input_data)
 
     # assert the result is as expected

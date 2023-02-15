@@ -1,7 +1,28 @@
-# Edamam endpoint
+from pathlib import Path
+
+# ----- Edamam API -----
+# URL endpoint
 EDAMAM_URL = "https://api.edamam.com/api/food-database/v2/parser"
 
-# food items we are considering for Vision API
+# ----- Weight Estimation Constants -----
+# Image size for a camera distance of 20cm from the item
+IMAGE_HEIGHT = 30
+IMAGE_WIDTH = 22
+
+# Factor to approximate filling of the visual area of food in %
+AREA_FILL = 0.7
+
+# Average depth of food in cm
+DEPTH_DICT = {"omelette": 1.0, "burger": 8.0, "pizza": 2.0}
+
+# Density values in g/ccm
+DENSITY_DICT = {"omelette": 0.8, "burger": 1.1, "pizza": 0.675}
+
+# ----- YOLO Model -----
+MODEL_VERSION = Path("8-epoch-omelette.pt")
+
+# ----- Vision API -----
+# Food items we are considering
 VALID_ITEMS = [
     "Burger",
     "Hamburger",

@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 import requests
 
-from app.constants import EDAMAM_URL
+from app.estimator.constants import EDAMAM_URL
 
 log = logging.getLogger("calories")
 
@@ -26,18 +26,24 @@ except KeyError:
 class FoodDetails:
     """
     Store food label and nutritional information.
+    Attributes:
+        label (str): Label from Edamam API
+        nutrition (dict[str, float]): Nutritional values for specified weight.
+        weight (float): Weight of item in grams (used to scale nutrition values).
     """
 
     label: str
     nutrition: dict[str, float]
+    weight: float = 100.0
 
 
-def get_food_details(search: str) -> FoodDetails:
+def get_food_details(search: str, weight: float = 100.0) -> FoodDetails:
     """
     Entry point for generating nutritional information using the
     Edamam API for an input food search term.
     Args:
         search (str): Food item for request.
+        weight (float): Estimated weight in grams.
     Returns:
         FoodDetails: Food label and nutrition details.
     """
@@ -47,6 +53,9 @@ def get_food_details(search: str) -> FoodDetails:
 
     # parse relevant data from API
     details = parse_json(data)
+
+    # scale nutrition by weight
+    details = scale_nutrition(details, weight)
 
     return details
 
@@ -85,14 +94,19 @@ def check_response(response: Any) -> Any:
     # extract response in JSON format
     data = response.json()
 
+    # extract relevant key: either 'parsed' or 'hints'
+    key = "parsed"
+    if len(data[key]) == 0:
+        key = "hints"
+
     # check for integrity of data
-    if not data["parsed"][0]["food"]["label"]:
+    if not data[key][0]["food"]["label"]:
         raise KeyError("API response data does not contain expected 'label' key")
 
-    if not data["parsed"][0]["food"]["nutrients"]:
+    if not data[key][0]["food"]["nutrients"]:
         raise KeyError("API response data does not contain expected 'nutrients' key")
 
-    return data["parsed"][0]["food"]
+    return data[key][0]["food"]
 
 
 def parse_json(data: Dict[Any, Any]) -> FoodDetails:
@@ -113,5 +127,26 @@ def parse_json(data: Dict[Any, Any]) -> FoodDetails:
     # construct food details based on relevant information
     details = FoodDetails(label, nutrition)
     log.info(f"[Edamam API] Item: {label} - Nutrition: {nutrition}")
+
+    return details
+
+
+def scale_nutrition(details: FoodDetails, weight: float) -> FoodDetails:
+    """
+    Scale nutritional values (default 100g) in FoodDetails based on
+    input weight.
+    Args:
+        details (FoodDetails): FoodDetails class containg nutritional
+            values to be scaled.
+        weight (float): Weight in grams.
+    Returns:
+        details (FoodDetails): FoodDetails object with scaled values.
+    """
+    # Scale nutrition values by weight
+    details.nutrition = {
+        k: round((entry / 100.0) * weight, 1) for k, entry in details.nutrition.items()
+    }
+    # Set weight attribute to passed in weight
+    details.weight = round(weight, 2)
 
     return details

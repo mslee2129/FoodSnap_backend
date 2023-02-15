@@ -3,6 +3,9 @@ FROM python:3.10.8
 # Setting working directory
 WORKDIR /code
 
+# Copy model
+COPY *.pt .
+
 # Install python packages
 COPY Pipfile Pipfile.lock ./
 RUN python -m pip install --upgrade pip

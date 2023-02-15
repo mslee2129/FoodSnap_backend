@@ -10,6 +10,8 @@ flask = "*"
 flask-cors = "*"
 google-cloud-vision = "*"
 gunicorn = "*"
+numpy = "*"
+ultralytics = "*"
 
 [dev-packages]
 pytest = "*"

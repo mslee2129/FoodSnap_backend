@@ -3,7 +3,15 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/cpu"
+verify_ssl = true
+name = "torch"
+
 [packages]
+torch = {version = "*", index="torch"}
+torchvision = {version = "*", index="torch"}
+torchaudio = {version = "*", index="torch"}
 requests = "*"
 typing = "*"
 flask = "*"

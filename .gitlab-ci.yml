@@ -55,6 +55,9 @@ unit tests:
 
 deploy:
   stage: deploy
+  environment: production
+  only:
+    - master
   image: google/cloud-sdk
   services:
     - docker:dind

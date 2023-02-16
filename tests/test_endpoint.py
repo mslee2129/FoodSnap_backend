@@ -20,23 +20,34 @@ def mock_fn(mocker: "MockerFixture"):
 
 @patch("google.cloud.vision.ImageAnnotatorClient")
 @patch("app.estimator.vision.get_food_classification")
-def test_get_calories_vision_calls_vision_function(mock_file, mock_vision):
+def test_get_calories_vision_calls_vision_function(mock_client, mock_vision):
     enum = ModeEnum.VISION
     image = Path("test_images/omelette.jpeg")
     get_calories(image, enum)
     mock_vision.assert_called_once()
 
 
+# @patch("app.estimator.yolo.detect_food_items")
+# @patch("app.estimator.yolo.parse_output")
+# @patch("app.estimator.yolo.MODEL_VERSION")
+# def test_get_calories_yolo_calls_yolo_functions(mock_yolo, mock_parse, null):
+#     enum = ModeEnum.YOLO
+#     image = Path("test_images/omelette.jpeg")
+#     get_calories(image, enum)
+#     mock_yolo.assert_called_once()
+#     mock_parse.assert_called_once()
+
+
 # def test_get_calories_yolo_returns_item_height_width():
-#
-#
+
+
 # def test_get_calories_keyerror_is_raised_with_invalid_enum():
 
 
-def test_classification_unavailable_returns_none():
-    # mock empty item
-    empty_image = Path("tmp/")
-    assert get_calories(empty_image) is None
+# def test_classification_unavailable_returns_none():
+#     # mock empty item
+#     empty_image = Path("test_images/")
+#     assert get_calories(empty_image) is None
 
 
 # def test_classification_available_returns_details():

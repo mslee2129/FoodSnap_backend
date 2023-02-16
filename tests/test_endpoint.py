@@ -10,6 +10,8 @@ from pytest_mock import MockerFixture
 # get_calorie_estimation mock
 #
 from app.api.endpoint import ModeEnum, get_calories
+from app.util import delete_file, save_image
+from tests.test_images.b64image import TEST_OMELETTE
 
 
 @pytest.fixture()
@@ -22,9 +24,11 @@ def mock_fn(mocker: "MockerFixture"):
 @patch("app.estimator.vision.get_food_classification")
 def test_get_calories_vision_calls_vision_function(mock_client, mock_vision):
     enum = ModeEnum.VISION
+    save_image(TEST_OMELETTE, Path("test_images/omelette.jpeg"))
     image = Path("test_images/omelette.jpeg")
     get_calories(image, enum)
     mock_vision.assert_called_once()
+    delete_file(image)
 
 
 # @patch("app.estimator.yolo.detect_food_items")

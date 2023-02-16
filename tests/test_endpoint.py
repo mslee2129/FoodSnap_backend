@@ -20,11 +20,11 @@ def mock_fn(mocker: "MockerFixture"):
 
 @patch("google.cloud.vision.ImageAnnotatorClient")
 @patch("app.estimator.vision.get_food_classification")
-def test_get_calories_vision_calls_vision_function():
+def test_get_calories_vision_calls_vision_function(mock_file, mock_vision):
     enum = ModeEnum.VISION
-    image = Path("tmp/")
+    image = Path("test_images/omelette.jpeg")
     get_calories(image, enum)
-    mock_fn.assert_called_once()
+    mock_vision.assert_called_once()
 
 
 # def test_get_calories_yolo_returns_item_height_width():

@@ -9,8 +9,8 @@ from flask_cors import CORS
 
 from app.estimator.calories import FoodDetails, get_food_details
 from app.estimator.vision import get_food_classification
-from app.estimator.weight import calculate_food_weight
-from app.estimator.yolo import detect_food_items, parse_output
+from app.estimator.weight import calculate_food_weight_plate, get_params_weight
+from app.estimator.yolo import detect_food_items
 from app.util import delete_file, save_image
 
 app = Flask(__name__)
@@ -40,20 +40,21 @@ def get_calories(
     # set default weight to 100g
     weight = 100.0
 
+    # set default value for item
+    item = None
+
     if mode == ModeEnum.VISION:
         # generate food classification from Google Vision API
         item = get_food_classification(image)
 
     elif mode == ModeEnum.YOLO:
         # generate output from YOLO model
-        dims, labels = detect_food_items(image)
-
-        # extract relevant fields from model output
-        item, height, width = parse_output(dims, labels)
+        labels, areas, dims = detect_food_items(image)
 
         # compute weight estimation
-        if item:
-            weight = calculate_food_weight(item, height, width)
+        if any(labels):
+            item, pixel_plate, pixel_food = get_params_weight(dims, labels, areas)
+            weight = calculate_food_weight_plate(item, pixel_plate, pixel_food)
 
     else:
         raise KeyError(f"Unknown estimation mode: {mode}")
@@ -70,6 +71,7 @@ def get_calories(
 @app.route("/", methods=["POST"])
 def get_calorie_estimation() -> Any:
     """Endpoint to retrieve calorie information from image in POST request."""
+
     try:
         # check that file is in request
         if "file" not in request.files.to_dict():
@@ -87,8 +89,12 @@ def get_calorie_estimation() -> Any:
         image_path = IMAGE_DIR / image.filename
         save_image(image.read(), image_path)
 
-        # generate calorie information
-        data = get_calories(image_path, ModeEnum.YOLO)
+        # generate calorie information with YOLO model
+        try:
+            data = get_calories(image_path, ModeEnum.YOLO)
+        # use Vision API as default
+        except Exception:
+            data = get_calories(image_path, ModeEnum.VISION)
 
         # remove image
         delete_file(image_path)

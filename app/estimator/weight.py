@@ -12,11 +12,78 @@ from app.estimator.constants import (
 )
 
 
+def calculate_food_weight_plate(
+    label: str, pixel_plate: float, pixel_food: float, plate_area: int = 490
+) -> float:
+    """
+    Estimates weight of food item in grams given a plate of fixed size as reference
+    Args:
+        label (str): Food item for estimation.
+        pixel_plate (float): number of pixel of the plate relative to image.
+        pixel_food (float): number of pixel of the food relative to image.
+        plate area (int): size of plate in scm (490scm for a diameter of 25cm).
+    Returns:
+        weight (float): weight of food item in grams.
+    """
+
+    # calculate the are of the food
+    area_rel = pixel_food / (pixel_plate + pixel_food)
+    area = area_rel * plate_area
+
+    # convert label to lowercase for dict values
+    label = label.lower()
+
+    # calculate weight assuming depth and density and converting into g
+    weight = area * DEPTH_DICT[label] * DENSITY_DICT[label]
+
+    return weight
+
+
+def get_params_weight(
+    dimensions_array: NDArray, label_array: NDArray, pixel_array: NDArray
+) -> tuple[str, float, float]:
+    """
+    Takes in model output and gets params for calculate_food_weight_plate.
+    Args:
+        dimensions_array (NDArray): (N, 2) with width, height for each object.
+        label_array (NDArray): (N, ) with label for each object.
+        pixel_array (NDArray): (N, ) with pixel relative to image for each object.
+    Returns:
+        params (tuple): label of food, pixel_plate, and pixel_food.
+    """
+
+    # check if plate is recognized
+    plate_counter = 0
+    plate_index = None
+    food_index = None
+    for i, label in enumerate(label_array):
+        if label == "plate":
+            plate_counter += 1
+            plate_index = i
+        elif label != "plate":
+            food_index = i
+    if plate_counter == 0:
+        raise ValueError("No plate found")
+    if plate_counter > 1:
+        raise ValueError(f"Too many plates recognized: {plate_counter}")
+
+    # make sure that we raise exception if food_index and plate_index not set
+    if food_index is None:
+        raise ValueError("No food recognised.")
+
+    # assign params
+    pixel_plate = pixel_array[plate_index]
+    pixel_food = pixel_array[food_index]
+    label_food = label_array[food_index]
+
+    return (label_food, pixel_plate, pixel_food)
+
+
 def calculate_food_weight(
     label: str, rel_height: float, rel_width: float, camera_distance: float = 20
 ) -> float:
     """
-    Estimates weight of food item in grams.
+    Estimates weight of food item in grams, assuming a camera distance.
     Args:
         label (str): Food item for estimation.
         rel_height (float): Height of food item relative to image size.
@@ -43,7 +110,7 @@ def calculate_food_weight(
 def get_label_weights(dimensions_array: NDArray, label_array: NDArray) -> NDArray:
     """
     Takes in model output in form of dimension (N, 2) and label arrays (1, N)
-    and returns label and weight array (N, 2).
+    and returns label and weight array (N, 2), assuming a camera distance.
     Args:
         dimensions_array (NDArray): (N, 2) with width, height for each object.
         label_array (NDArray): (1, N) with label for each object.

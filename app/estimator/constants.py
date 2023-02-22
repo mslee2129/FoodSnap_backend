@@ -19,7 +19,7 @@ DEPTH_DICT = {"omelette": 1.0, "burger": 8.0, "pizza": 2.0}
 DENSITY_DICT = {"omelette": 0.8, "burger": 1.1, "pizza": 0.675}
 
 # ----- YOLO Model -----
-MODEL_VERSION = Path("8-epoch-omelette.pt")
+MODEL_VERSION = Path("model.pt")
 
 # ----- Vision API -----
 # Food items we are considering

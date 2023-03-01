@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Tuple
 
 import numpy as np
 from numpy.typing import NDArray
 from ultralytics import YOLO
 
-from app.estimator.constants import MODEL_VERSION
+from app.estimator.constants import MODEL_THRESHOLD, MODEL_VERSION
 
 
 def detect_food_items(input: Path) -> Tuple[NDArray, NDArray, NDArray]:
@@ -25,7 +25,7 @@ def detect_food_items(input: Path) -> Tuple[NDArray, NDArray, NDArray]:
     model = YOLO(MODEL_VERSION)
 
     # generate prediction based on input image
-    results = model.predict(source=input, save=False)
+    results = model.predict(source=input, conf=MODEL_THRESHOLD, save=False)
 
     # get identified classes
     cls_tensor = results[0].boxes.cls
@@ -59,29 +59,25 @@ def detect_food_items(input: Path) -> Tuple[NDArray, NDArray, NDArray]:
     return labels, areas, dims
 
 
-def parse_output(dims: NDArray, labels: NDArray) -> Tuple[Any, Any, Any]:
+def get_num_plate_food(labels: NDArray) -> Tuple[int, int]:
     """
-    Parse output from YOLO model.
+    Count number of plates and foods recognised by YOLO model.
     Args:
-        dims (NDArray): (N, 2) array containing two columns:
-            [Normalised Width, Normalised Height].
-        labels (NDArray): (1, N) array detailing class labels.
+        labels (NDArray): (N) 1D array containing food items.
     Returns:
-        label (str | NDArray): Label string or array (multiple elements).
-        width (float | NDArray): Width value or array (multiple elements).
-        height (float | NDArray): Height value or array (multiple elements).
+        plate_counter (int): Number of plates recognised.
+        food_counter (int): Number of foods recognised.
     """
-    # extract relevant fields
-    label = labels[:, 0]
-    width = dims[:, 0]
-    height = dims[:, 1]
+    # initialize counters for plates and items
+    plate_counter, food_counter = 0, 0
 
-    # TODO: currently assumes 1 record
-    if len(label) == 1:
-        label = label[0]
-    if len(width) == 1:
-        width = width[0]
-    if len(height) == 1:
-        height = height[0]
+    # loop through labels and increase counter
+    for item in labels:
+        # increment plate counter if plate in labels
+        if item == "plate":
+            plate_counter += 1
+        # otherwise increment food items
+        else:
+            food_counter += 1
 
-    return label, width, height
+    return plate_counter, food_counter

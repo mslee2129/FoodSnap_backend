@@ -42,7 +42,8 @@ unit tests:
   interruptible: true
   script:
     - pipenv install
-    - pytest --junitxml=report.xml --cov=app/ --cov-report term-missing tests/
+    - apt-get install -y libgl1-mesa-glx
+    - pytest -v --junitxml=report.xml --cov=app/ --cov-report term-missing tests/
     - coverage xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:

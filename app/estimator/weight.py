@@ -1,33 +1,86 @@
 """Functions to estimate the weight of a food item."""
 
+from typing import List, Optional, Tuple
+
 import numpy as np
 from numpy.typing import NDArray
 
-from app.estimator.constants import (
-    AREA_FILL,
-    DENSITY_DICT,
-    DEPTH_DICT,
-    IMAGE_HEIGHT,
-    IMAGE_WIDTH,
-)
+from app.estimator.constants import DENSITY_DICT, DEPTH_DICT, IMAGE_HEIGHT, IMAGE_WIDTH
+
+
+def get_food_weights(
+    label_list: List,
+    pixel_list: List,
+    pixel_plate: Optional[float] = None,
+    plate: bool = False,
+) -> List[float]:
+    """
+    Puts the weights of all recognized food items into a list.
+    Args:
+        label_list (List): List of food items recognized.
+        pixel_list (List): List of pixel for each food item, corresponding to label_list.
+        pixel_plate (float): Pixel of plate relative to image (None default).
+        plate (bool): If true, pixel plate must also be passed; invokes calculation using plate.
+    Returns:
+        List[float]: List of weights (in g) of all recognized food items.
+    """
+
+    # initialize list
+    weights = []
+
+    # calculation without plate
+    if not plate:
+        for i in range(len(label_list)):
+            weight = calculate_food_weight(label_list[i], pixel_list[i])
+            weights.append(weight)
+
+    # calculate with plate if recognized
+    else:
+        if not pixel_plate:
+            raise ValueError("No plate pixel passed!")
+        for i in range(len(label_list)):
+            weight = calculate_food_weight_plate(
+                label_list[i], pixel_plate, pixel_list[i]
+            )
+            weights.append(weight)
+
+    return weights
+
+
+def calculate_pixel_plate(areas: NDArray) -> float:
+    """
+    Adds up all the relative pixel values of the food items and the plate,
+    assuming all food items are placed on the plate.
+    Args:
+        areas (NDarray): Pixels relative to image of all recognized objects.
+    Returns:
+        pixel_item (float): Pixels of the plate relative to total image pixels.
+    """
+    pixel_plate = 0
+    for pixel_item in areas:
+        pixel_plate += pixel_item
+
+    return pixel_item
 
 
 def calculate_food_weight_plate(
-    label: str, pixel_plate: float, pixel_food: float, plate_area: int = 490
+    label: str, pixel_plate: float, pixel_food: float, plate_diameter: float = 25.0
 ) -> float:
     """
-    Estimates weight of food item in grams given a plate of fixed size as reference
+    Estimates weight of food item in grams given a plate of fixed size as reference.
     Args:
         label (str): Food item for estimation.
-        pixel_plate (float): number of pixel of the plate relative to image.
-        pixel_food (float): number of pixel of the food relative to image.
-        plate area (int): size of plate in scm (490scm for a diameter of 25cm).
+        pixel_plate (float): Number of pixels of the plate relative to image.
+        pixel_food (float): Number of pixels of the food relative to image.
+        plate area (float): Diameter of plate in cm (default is 25cm).
     Returns:
-        weight (float): weight of food item in grams.
+        weight (float): Weight of food item in grams.
     """
+    # calculate plate area
+    plate_area = np.pi * (plate_diameter / 2) ** 2
 
-    # calculate the are of the food
-    area_rel = pixel_food / (pixel_plate + pixel_food)
+    # calculate the area of the food
+    area_rel = pixel_food / pixel_plate
     area = area_rel * plate_area
 
     # convert label to lowercase for dict values
@@ -39,74 +92,58 @@ def calculate_food_weight_plate(
     return weight
 
 
-def get_params_weight(
-    dimensions_array: NDArray, label_array: NDArray, pixel_array: NDArray
-) -> tuple[str, float, float]:
+def get_params_weight(label_array: NDArray, pixel_array: NDArray) -> Tuple[List, List]:
     """
-    Takes in model output and gets params for calculate_food_weight_plate.
+    Removes the plate from the numpy arrays and returns two lists with food
+    labels and pixels.
     Args:
-        dimensions_array (NDArray): (N, 2) with width, height for each object.
         label_array (NDArray): (N, ) with label for each object.
         pixel_array (NDArray): (N, ) with pixel relative to image for each object.
     Returns:
-        params (tuple): label of food, pixel_plate, and pixel_food.
+        Tuple[List, List]: Two lists of all food labels and relative pixel areas.
     """
 
-    # check if plate is recognized
-    plate_counter = 0
-    plate_index = None
-    food_index = None
+    # initialize empty lists
+    label_list, pixel_list = [], []
+
+    # copy foods and pixels into lists
     for i, label in enumerate(label_array):
-        if label == "plate":
-            plate_counter += 1
-            plate_index = i
-        elif label != "plate":
-            food_index = i
-    if plate_counter == 0:
-        raise ValueError("No plate found")
-    if plate_counter > 1:
-        raise ValueError(f"Too many plates recognized: {plate_counter}")
+        if label != "plate":
+            label_list.append(label)
+            pixel_list.append(pixel_array[i])
 
-    # make sure that we raise exception if food_index and plate_index not set
-    if food_index is None:
-        raise ValueError("No food recognised.")
-
-    # assign params
-    pixel_plate = pixel_array[plate_index]
-    pixel_food = pixel_array[food_index]
-    label_food = label_array[food_index]
-
-    return (label_food, pixel_plate, pixel_food)
+    return (label_list, pixel_list)
 
 
 def calculate_food_weight(
-    label: str, rel_height: float, rel_width: float, camera_distance: float = 20
+    label: str, pixel_food: float, camera_distance: float = 20.0
 ) -> float:
     """
     Estimates weight of food item in grams, assuming a camera distance.
     Args:
         label (str): Food item for estimation.
-        rel_height (float): Height of food item relative to image size.
-        rel_width (float): Width of food item relative to image size.
+        pixel_food (float): Pixel of food relative to image pixels.
         camera_distance (float): Assumed distance of camera to food item.
     Returns:
         weight (float): Weight of food item in grams.
     """
 
-    # calculate area in scm using constants
-    abs_height = IMAGE_HEIGHT * rel_height
-    abs_width = IMAGE_WIDTH * rel_width
-    area = abs_height * abs_width
+    # calculate area image in scm
+    area_image = IMAGE_HEIGHT * IMAGE_WIDTH
+
+    # calculate area of food in scm
+    area_food = area_image * pixel_food
 
     # convert label to lowercase for dict values
     label = label.lower()
 
     # calculate weight assuming depth and density and converting into g
-    weight = area * DEPTH_DICT[label] * AREA_FILL * DENSITY_DICT[label]
+    weight = area_food * DEPTH_DICT[label] * DENSITY_DICT[label]
 
     return weight
 
 
+# currently not used
 def get_label_weights(dimensions_array: NDArray, label_array: NDArray) -> NDArray:
     """
     Takes in model output in form of dimension (N, 2) and label arrays (1, N)

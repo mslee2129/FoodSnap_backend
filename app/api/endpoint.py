@@ -174,10 +174,13 @@ def get_calorie_estimation() -> Any:
                 "model_code": model_code.value,
                 "results": results,
             }
+            log.info(f"[Endpoint] Sending successful response: {response}")
         return jsonify(response)
 
     except Exception as e:
-        abort(500, f"Unable to return calorie information due to error: {e}")
+        msg = f"Unable to return calorie information due to error: {e}"
+        log.error(msg)
+        abort(500, msg)
 
 
 if __name__ == "__main__":

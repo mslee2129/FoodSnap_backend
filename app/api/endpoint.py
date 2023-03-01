@@ -155,12 +155,15 @@ def get_calorie_estimation() -> Any:
         image_path = IMAGE_DIR / image.filename
         save_image(image.read(), image_path)
 
-        # generate calorie information
-        results, model_code = get_calories(image_path)
-
-        # remove image
-        delete_file(image_path)
-        IMAGE_DIR.rmdir()
+        try:
+            # generate calorie information
+            results, model_code = get_calories(image_path)
+        except Exception:
+            raise
+        finally:
+            # remove directory irrespective of failure
+            delete_file(image_path)
+            IMAGE_DIR.rmdir()
 
         # send response depending on whether or not food items are detected
         response = {

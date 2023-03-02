@@ -34,7 +34,7 @@ DENSITY_DICT = {
 
 # ----- YOLO Model -----
 MODEL_VERSION = Path("model.pt")
-MODEL_THRESHOLD = 0.5
+MODEL_THRESHOLD = 0.7
 
 # ----- Vision API -----
 # Food items we are considering

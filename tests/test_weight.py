@@ -18,17 +18,19 @@ def test_get_food_weights():
     weights_list = get_food_weights(labels_list, pixels_food)
 
     # calculate weights for all three items
-    area_omelette = 0.2 * (IMAGE_HEIGHT * IMAGE_WIDTH)
+    area_image = IMAGE_HEIGHT * IMAGE_WIDTH
+
+    area_omelette = area_image * 0.2
     weight_omelette = (
         area_omelette * DEPTH_DICT[labels_list[0]] * DENSITY_DICT[labels_list[0]]
     )
 
-    area_pizza = 0.3 * (IMAGE_HEIGHT * IMAGE_WIDTH)
+    area_pizza = area_image * 0.3
     weight_pizza = (
         area_pizza * DEPTH_DICT[labels_list[1]] * DENSITY_DICT[labels_list[1]]
     )
 
-    area_burger = 0.2 * (IMAGE_HEIGHT * IMAGE_WIDTH)
+    area_burger = area_image * 0.2
     weight_burger = (
         area_burger * DEPTH_DICT[labels_list[2]] * DENSITY_DICT[labels_list[2]]
     )
@@ -44,7 +46,7 @@ def test_get_food_weights():
         labels_list, pixels_food, pixel_plate, plate=True
     )
 
-    # calculate plate areaa
+    # calculate plate area
     plate_area = np.pi * (25.0 / 2) ** 2
 
     # calculate weights of all three items

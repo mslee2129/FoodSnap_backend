@@ -1,5 +1,4 @@
 """Functions to estimate the weight of a food item."""
-
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -12,6 +11,7 @@ def get_food_weights(
     label_list: List,
     pixel_list: List,
     pixel_plate: Optional[float] = None,
+    plate_diameter: float = 25.0,
     plate: bool = False,
 ) -> List[float]:
     """
@@ -20,6 +20,7 @@ def get_food_weights(
         label_list (List): List of food items recognized.
         pixel_list (List): List of pixel for each food item, corresponding to label_list.
         pixel_plate (float): Pixel of plate relative to image (None default).
+        plate_diameter (float): Diameter of plate.
         plate (bool): If true, pixel plate must also be passed; invokes calculation using plate.
     Returns:
         List[float]: List of weights (in g) of all recognized food items.
@@ -40,7 +41,7 @@ def get_food_weights(
             raise ValueError("No plate pixel passed!")
         for i in range(len(label_list)):
             weight = calculate_food_weight_plate(
-                label_list[i], pixel_plate, pixel_list[i]
+                label_list[i], pixel_plate, pixel_list[i], plate_diameter
             )
             weights.append(weight)
 
@@ -72,7 +73,7 @@ def calculate_food_weight_plate(
         label (str): Food item for estimation.
         pixel_plate (float): Number of pixels of the plate relative to image.
         pixel_food (float): Number of pixels of the food relative to image.
-        plate area (float): Diameter of plate in cm (default is 25cm).
+        plate_diameter (float): Diameter of plate (default is 25.0).
     Returns:
         weight (float): Weight of food item in grams.
     """
@@ -112,18 +113,22 @@ def get_params_weight(label_array: NDArray, pixel_array: NDArray) -> Tuple[List,
             label_list.append(label)
             pixel_list.append(pixel_array[i])
 
-    return (label_list, pixel_list)
+    return label_list, pixel_list
 
 
 def calculate_food_weight(
     label: str, pixel_food: float, camera_distance: float = 20.0
 ) -> float:
     """
-    Estimates weight of food item in grams, assuming a camera distance.
+    Estimates weight of food item in grams, assuming a camera distance and the
+    angle of the camera being directly above.
     Args:
         label (str): Food item for estimation.
         pixel_food (float): Pixel of food relative to image pixels.
-        camera_distance (float): Assumed distance of camera to food item.
+        camera_distance (float): Assumed distance of camera to food item. Please note,
+            the camera distance is not used in the calculation itself, but determines the
+            constants IMAGE_HEIGHT and IMAGE_WIDTH used. 20cm in this case corresponds to
+            a height and width of 30cm and 22cm.
     Returns:
         weight (float): Weight of food item in grams.
     """

@@ -160,7 +160,6 @@ def get_calorie_estimation() -> Any:
         image = request.files.to_dict()["file"]
 
         # extract plate size from request if available otherwise set default
-        log.info(f"[Endpoint] request: {request.form.to_dict()}")
         try:
             plate_size = float(request.form.to_dict()["plateValue"])
         except Exception as e:

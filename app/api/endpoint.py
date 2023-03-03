@@ -35,12 +35,15 @@ class ModelCodeEnum(Enum):
     NO_FOOD_DETECTED = "NO_FOOD_DETECTED"
 
 
-def get_model_predictions(image: Path) -> Tuple[List, List, bool, bool]:
+def get_model_predictions(
+    image: Path, plate_diameter: float = 25.0
+) -> Tuple[List, List, bool, bool]:
     """
     Obtain food classifications from YOLO model and compute weights
     based on the plate (if present) or image size.
     Args:
         image (Path): Image location for calorie prediction.
+        plate_diameter (float): Diameter of plate.
     Returns:
         labels_list (List): List of food items.
         weights_list (List): List of weights corresponding to food items.
@@ -71,11 +74,18 @@ def get_model_predictions(image: Path) -> Tuple[List, List, bool, bool]:
             if plate_counter == 1:
                 # adds all the food and plate pixel up, assuming all foods are on the plate
                 pixel_plate = calculate_pixel_plate(areas)
+
+                # ensure supplied plate size is sensible otherwise set to default
+                if plate_diameter < 10.0 or plate_diameter > 40.0:
+                    plate_diameter = 25.0
+
                 # compute weight using plate
                 weights_list = get_food_weights(
-                    labels_list, pixels_food, pixel_plate, plate=True
+                    labels_list, pixels_food, pixel_plate, plate_diameter, plate=True
                 )
-                log.info("[YOLO] Using plate to estimate weight.")
+                log.info(
+                    f"[YOLO] Using plate of size {plate_diameter}cm to estimate weight."
+                )
                 use_plate = True
 
             # Step 4b - calculate weight assuming image size (no plate)
@@ -89,18 +99,21 @@ def get_model_predictions(image: Path) -> Tuple[List, List, bool, bool]:
     return labels_list, weights_list, use_plate, success
 
 
-def get_calories(image: Path) -> Tuple[List, ModelCodeEnum]:
+def get_calories(
+    image: Path, plate_diameter: float = 25.0
+) -> Tuple[List, ModelCodeEnum]:
     """
     Retrieve calorie information for image located at specified path.
     Args:
         image (Path): Image location for calorie prediction.
+        plate_diameter (float): Diameter of plate.
     Returns:
         food_details (List): Food label and nutrition details.
         model_code (ModelCodeEnum): Model calculation mode used.
     """
     # Step 1 - invoke YOLO model
     log.info("[Endpoint] Invoking YOLO model.")
-    items, weights, use_plate, success = get_model_predictions(image)
+    items, weights, use_plate, success = get_model_predictions(image, plate_diameter)
     if success:
         if use_plate:
             model_code = ModelCodeEnum.YOLO_USE_PLATE_SIZE
@@ -146,6 +159,12 @@ def get_calorie_estimation() -> Any:
         # extract image from request
         image = request.files.to_dict()["file"]
 
+        # extract plate size from request if available otherwise set default
+        try:
+            plate_size = float(request.files.to_dict()["plateValue"])
+        except Exception:
+            plate_size = 25.0
+
         # ensure filename present
         if not image.filename:
             raise ValueError("Filename for uploaded image not present.")
@@ -157,7 +176,7 @@ def get_calorie_estimation() -> Any:
 
         try:
             # generate calorie information
-            results, model_code = get_calories(image_path)
+            results, model_code = get_calories(image_path, plate_size)
         except Exception:
             raise
         finally:

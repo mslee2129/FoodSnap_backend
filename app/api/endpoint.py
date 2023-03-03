@@ -161,8 +161,13 @@ def get_calorie_estimation() -> Any:
 
         # extract plate size from request if available otherwise set default
         try:
+            if "plateValue" in request.files.to_dict():
+                log.info(
+                    f"[Endpoint] plateValue: {request.files.to_dict()['plateValue']}"
+                )
             plate_size = float(request.files.to_dict()["plateValue"])
-        except Exception:
+        except Exception as e:
+            log.info(f"[Endpoint] Using default plate size due to: {e}")
             plate_size = 25.0
 
         # ensure filename present

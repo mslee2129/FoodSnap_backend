@@ -57,6 +57,9 @@ def get_food_details(search: str, weight: float = 100.0) -> FoodDetails:
     # scale nutrition by weight
     details = scale_nutrition(details, weight)
 
+    # use the original search term as the label
+    details.label = search.capitalize()
+
     return details
 
 

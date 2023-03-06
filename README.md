@@ -51,3 +51,42 @@ Installing a new library (and updating [`Pipfile`](Pipfile) and [`Pipfile.lock`]
 ```
 pipenv install library-name
 ```
+
+## Execution
+
+Prerequisites:
+* Download a service account key as JSON file from GCP which is required for using the Vision API
+* Ensure environment variables are set in `.env` (and set `GOOGLE_APPLICATION_CREDENTIALS` to the path where the service account key is located)
+* Download the latest YOLO model from Cloud Storage (`gs://food-snap-artefacts/models/latest/model.pt`) and keep it in the root folder
+* Activate the virtual environment
+
+Run server:
+```
+flask --app app.api.endpoint --debug run
+```
+
+Make `POST` request with image stored locally (for example if you had an image called `omelette.jpg`):
+```
+curl -F file=@omelette.jpg "http://127.0.0.1:5000/"
+```
+
+You should see a response such as:
+```
+{
+  "model_code": "YOLO_USE_PLATE_SIZE",
+  "results": [
+    {
+      "label": "Omelette",
+      "nutrition": {
+        "CHOCDF": 13.0,
+        "ENERC_KCAL": 632.6,
+        "FAT": 48.8,
+        "FIBTG": 2.4,
+        "PROCNT": 35.2
+      },
+      "weight": 392.7
+    }
+  ],
+  "status": "success"
+}
+```

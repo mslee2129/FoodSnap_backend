@@ -61,7 +61,7 @@ def calculate_pixel_plate(areas: NDArray) -> float:
     for pixel_item in areas:
         pixel_plate += pixel_item
 
-    return pixel_item
+    return pixel_plate
 
 
 def calculate_food_weight_plate(
@@ -77,6 +77,7 @@ def calculate_food_weight_plate(
     Returns:
         weight (float): Weight of food item in grams.
     """
+
     # calculate plate area
     plate_area = np.pi * (plate_diameter / 2) ** 2
 

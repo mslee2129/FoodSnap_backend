@@ -15,7 +15,7 @@ AREA_FILL = 0.7
 # Average depth of food in cm
 DEPTH_DICT = {
     "omelette": 1.0,
-    "burger": 6.0,
+    "burger": 5.0,
     "pizza": 1.0,
     "fries": 3.0,
     "bread": 1.5,
